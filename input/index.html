@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flight Route Form</title>
+  <link rel = "stylesheet" href = "style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Flight Route</h2>
+    <form id="flightForm">
+      <div class="input-group">
+        <label for="departure">Departure Airport:</label>
+        <input type="text" id="departure" required />
+      </div>
+      <div class="input-group">
+        <label for="arrival">Arrival Airport:</label>
+        <input type="text" id="arrival" required />
+      </div>
+      <div class="input-group">
+        <label>Intermediate Airports:</label>
+        <div id="intermediateContainer">
+          <input type="text" class="intermediate" />
+        </div>
+        <button type="button" class="add-btn" onclick="addIntermediate()">+ Add Intermediate</button>
+      </div>
+      <button type="submit">Save as JSON</button>
+    </form>
+  </div>
+
+  <script>
+    function addIntermediate() {
+      const container = document.getElementById('intermediateContainer');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'intermediate';
+      input.style.marginTop = '10px';
+      container.appendChild(input);
+    }
+
+    document.getElementById('flightForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const departure = document.getElementById('departure').value.trim();
+      const arrival = document.getElementById('arrival').value.trim();
+      const intermediateInputs = document.querySelectorAll('.intermediate');
+      const intermediates = Array.from(intermediateInputs)
+                                .map(input => input.value.trim())
+                                .filter(val => val !== "");
+
+      const data = {
+        departure_airport: departure,
+        arrival_airport: arrival,
+        intermediate_airports: intermediates
+      };
+
+      const jsonString = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonString], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "flight_route.json";
+      link.click();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+h1 {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-decoration: dotted;
+    width: 40%;
+    font-size: 2rem;
+    color: #023e8a;
+    text-align: left;
+    border-bottom: 3px solid #0077b6;
+    padding-bottom: 0.5rem;
+    margin: 1rem 0;
+    margin-left: 15px;
+    letter-spacing: 1px;
+}
+
+.pirep-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 15px;
+}
+
+.pirep-card {
+    background: #f5f7fa;
+    width: 45%;
+    border-left: 5px solid #0096c7;
+    border-right: 5px solid #0096c7;
+    padding: 1rem;
+    border-radius: 10px;
+    font-family: sans-serif;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+
+.pirep-card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.2rem;
+    color: #023e8a;
+}
+
+
+.pirep-card p {
+    margin: 0.3rem 0;
+}
+
+.pirep-card .raw {
+    margin-top: 0.8rem;
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-style: italic;
+}

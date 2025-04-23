@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TAF Report - KLAX</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <h1>TAF Forecasts</h1>
+  <div id="tafContainer">Loading TAF data...</div>
+
+  <script>
+    function parseTAF(data) {
+      const taf = data.taf;
+      const icao = data.icao;
+      const lines = taf.trim().split('\n');
+      const header = lines[0];
+      const forecasts = lines.slice(1);
+      const dateMatch = taf.match(/(\d{4})\/(\d{2})\/(\d{2})/);
+      const validMatch = taf.match(/(\d{2})(\d{2})\/(\d{2})(\d{2})/);
+
+      if (!dateMatch || !validMatch) return "Invalid TAF format.";
+
+      const [_, yearStr, monthStr, dayStr] = dateMatch;
+      const year = parseInt(yearStr);
+      const month = parseInt(monthStr) - 1;
+      const day = parseInt(dayStr);
+
+      const [__, fromDayStr, fromHourStr, toDayStr, toHourStr] = validMatch;
+      const fromDay = parseInt(fromDayStr);
+      const fromHour = parseInt(fromHourStr);
+      const toDay = parseInt(toDayStr);
+      const toHour = parseInt(toHourStr);
+
+      const startDate = new Date(Date.UTC(year, month, fromDay, fromHour));
+      const endDate = new Date(Date.UTC(year, month, toDay, toHour === 24 ? 0 : toHour));
+      if (toHour === 24) {
+        endDate.setUTCDate(endDate.getUTCDate() + 1);
+      }
+
+      let output = `<strong style="font-size: 1.8rem; color:  #023e8a;" >Forecast for ${icao}</strong><br>`;
+      output += `Valid from <em>${startDate.toUTCString()}</em> to <em>${endDate.toUTCString()}</em><br>`;
+
+      forecasts.forEach(line => {
+        line = line.trim();
+        if (line.startsWith("FM")) {
+          const timeCode = line.substring(2, 8);
+          const day = parseInt(timeCode.slice(0, 2));
+          const hour = parseInt(timeCode.slice(2, 4));
+          const minute = parseInt(timeCode.slice(4, 6));
+          const time = new Date(Date.UTC(year, month, day, hour, minute));
+          output += `<strong>From ${time.toUTCString()}:</strong><br>`;
+          line = line.substring(8).trim();
+        }
+
+        const windMatch = line.match(/(\d{3}|VRB)(\d{2})KT/);
+        if (windMatch) {
+          const dir = windMatch[1] === 'VRB' ? 'Variable' : `${windMatch[1]}°`;
+          const speed = parseInt(windMatch[2]);
+          output += `&nbsp;&nbsp;- Wind: ${dir} at ${speed} knots<br>`;
+        }
+
+        if (line.includes("P6SM")) {
+          output += `&nbsp;&nbsp;- Visibility: Greater than 6 statute miles<br>`;
+        }
+
+        const cloudRegex = /(SCT|BKN|OVC)(\d{3})/g;
+        let match;
+        while ((match = cloudRegex.exec(line)) !== null) {
+          const coverage = { SCT: "Scattered", BKN: "Broken", OVC: "Overcast" }[match[1]];
+          const height = parseInt(match[2]) * 100;
+          output += `&nbsp;&nbsp;- Clouds: ${coverage} clouds at ${height} feet<br>`;
+        }
+
+        output += `<br>`;
+      });
+
+      return output.trim();
+    }
+
+    fetch('TAF_data.json')
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('tafContainer');
+        container.innerHTML = ""; // Clear loading text
+
+        const entries = Array.isArray(data) ? data : [data];
+
+        entries.forEach(entry => {
+          const tafHTML = parseTAF(entry);
+          const card = document.createElement('div');
+          card.className = 'taf-card';
+          card.innerHTML = tafHTML;
+          container.appendChild(card);
+        });
+      })
+      .catch(err => {
+        document.getElementById('tafContainer').textContent = "Failed to load TAF data.";
+        console.error(err);
+      });
+  </script>
+
+</body>
+</html>

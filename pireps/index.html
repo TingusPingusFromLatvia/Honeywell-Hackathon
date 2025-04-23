@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PIREP Reports</title>
+  <link rel="stylesheet" href="style.css" />
+</head> 
+<body>
+  <div>
+    <h1>PIREPs Within 50 NM of Flight Path:</h1>
+    <ul class="pirep-list"></ul>
+  </div>
+
+  <script>
+    const listEl = document.querySelector('.pirep-list');
+
+    fetch('./nearby_pireps.json')
+      .then(res => res.json())
+      .then(data => {
+        data.forEach(pirep => {
+          const wrapper = document.createElement('li');
+          wrapper.className = 'pirep-card';
+
+          const receiptTime = pirep.receiptTime ? new Date(pirep.receiptTime).toLocaleString() : 'N/A';
+          const obsTime = pirep.obsTime ? new Date(pirep.obsTime * 1000).toLocaleString() : 'N/A';
+
+          //HTML
+          let html = `<h3>${pirep.acType || 'Aircraft'} (${pirep.icaoId || 'Unknown ICAO'})</h3>`;
+          html += `<p><strong>Receipt Time:</strong> ${receiptTime}</p>`;
+          html += `<p><strong>Observed Time:</strong> ${obsTime}</p>`;
+          if (pirep.fltLvl) html += `<p><strong>Flight Level:</strong> FL${pirep.fltLvl}</p>`;
+          if (pirep.temp != null) html += `<p><strong>Temperature:</strong> ${pirep.temp}°C</p>`;
+          if (pirep.wdir != null && pirep.wspd != null) {
+            html += `<p><strong>Wind:</strong> ${pirep.wdir}° at ${pirep.wspd} kt</p>`;
+          }
+          if (pirep.wxString) html += `<p><strong>Weather:</strong> ${pirep.wxString}</p>`;
+          if (pirep.cloudCvg1) html += `<p><strong>Cloud Cover:</strong> ${pirep.cloudCvg1}</p>`;
+          if (pirep.coordinates) {
+            html += `<p><strong>Location:</strong> ${pirep.coordinates[0].toFixed(4)}, ${pirep.coordinates[1].toFixed(4)}</p>`;
+          }
+          if (pirep.rawOb) html += `<p class="raw"><strong>Raw PIREP:</strong> ${pirep.rawOb}</p>`;
+
+          wrapper.innerHTML = html;
+          listEl.appendChild(wrapper);
+        });
+      });
+  </script>
+</body>
+</html>

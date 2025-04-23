@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>METAR</title>
+    <link rel = "stylesheet" href="style.css">
+    
+</head>
+<body>
+    <div>
+    <h1>METAR:</h1>
+    <ul class="metar-list"></ul>
+    </div>
+    
+    <script>
+        const listEl = document.querySelector('ul');
+        fetch('./metar_data.json')
+            .then(res => res.json())
+            .then(data => {
+                data.forEach(post => {
+                    const wrapper = document.createElement('li');
+                    wrapper.className = 'metar-card';
+
+                    const reportTime = post.reportTime ? new Date(post.reportTime).toLocaleString() : 'N/A';
+                    const obsTime = post.obsTime ? new Date(post.obsTime * 1000).toLocaleString() : 'N/A';
+
+                    wrapper.innerHTML = `
+                        <h3>${post.icaoId || 'Weather Report'} ( ${post.name || 'Weather Report'})</h3>
+                        
+                        <p><strong>Report Time:</strong> ${reportTime}</p>
+                        <p><strong>Observed Time:</strong> ${obsTime}</p>
+                        ${post.temp != null ? `<p><strong>Temperature:</strong> ${post.temp}°C</p>` : ''}
+                        ${post.dewp != null ? `<p><strong>Dew Point:</strong> ${post.dewp}°C</p>` : ''}
+                        ${post.wdir != null ? `<p><strong>Wind:</strong> ${post.wdir}° at ${post.wspd} kt${post.wgst ? `, Gusts to ${post.wgst} kt` : ''}</p>` : ''}
+                        ${post.visib ? `<p><strong>Visibility:</strong> ${post.visib}</p>` : ''}
+                        ${post.altim != null ? `<p><strong>Altimeter:</strong> ${post.altim} hPa</p>` : ''}
+                        ${post.clouds?.[0]?.cover ? `<p><strong>Clouds:</strong> ${post.clouds[0].cover}</p>` : ''}
+                        <p class="raw"><strong>Raw METAR:</strong> ${post.rawOb || 'N/A'}</p>
+                    `;
+
+                    listEl.appendChild(wrapper);
+                });
+
+    
+        });
+        
+    </script>
+</body>
+</html>
+
